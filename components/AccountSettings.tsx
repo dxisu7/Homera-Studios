@@ -177,7 +177,25 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-        alert("Avatar upload simulated.");
+      const file = e.target.files[0];
+      
+      // Basic validation
+      if (!file.type.startsWith('image/')) {
+        setNotification("Please select a valid image file.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        // Immediate update for "simulated" upload
+        onUpdateUser({ ...user, avatarUrl: result });
+        setNotification("Profile picture updated.");
+        
+        // Clear notification after delay
+        setTimeout(() => setNotification(null), 3000);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -231,17 +249,30 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
               <form onSubmit={handleProfileSave} className="space-y-6">
                 {/* Avatar Section */}
                 <div className="flex items-center gap-6 pb-6 border-b border-zinc-800">
-                  <div className="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center text-2xl font-bold text-zinc-500 border-2 border-dashed border-zinc-700 overflow-hidden relative group">
-                    {user.avatarUrl ? <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : user.name.charAt(0)}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                         <Upload className="w-6 h-6 text-white" />
+                  <div className="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center text-2xl font-bold text-zinc-500 border-2 border-dashed border-zinc-700 overflow-hidden relative group shadow-inner">
+                    {user.avatarUrl ? (
+                        <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                        <span className="text-zinc-500">{user.name.charAt(0)}</span>
+                    )}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                         <Upload className="w-6 h-6 text-white drop-shadow-md" />
                     </div>
+                    {/* Invisible file input covering the area for better UX on drag/click */}
+                    <input 
+                        type="file" 
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                        accept="image/*" 
+                        onChange={handleAvatarChange} 
+                    />
                   </div>
-                  <div>
-                    <label className="text-sm bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-md transition-colors cursor-pointer inline-block">
-                      Change Avatar
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-md transition-colors cursor-pointer inline-flex items-center gap-2">
+                      <Upload className="w-4 h-4" />
+                      Upload New Picture
                       <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
                     </label>
+                    <p className="text-xs text-zinc-500">Recommended: Square JPG, PNG. Max 2MB.</p>
                   </div>
                 </div>
 

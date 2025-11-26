@@ -39,7 +39,7 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({ generated, onSave, i
 
         <a 
           href={generated} 
-          download="nano-banana-render.png"
+          download="homera-ai-render.png"
           className="bg-black/70 border border-white/10 backdrop-blur text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-white hover:text-black transition-all transform hover:scale-105 shadow-lg"
         >
           <Download className="w-4 h-4" />

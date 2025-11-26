@@ -31,7 +31,7 @@ export const Library: React.FC<LibraryProps> = ({ items, onDelete }) => {
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-sm">
               <a 
                 href={item.generatedImage} 
-                download={`nano-banana-${item.id}.png`}
+                download={`homera-ai-${item.id}.png`}
                 className="p-3 bg-white text-black rounded-full hover:bg-yellow-500 transition-colors shadow-lg transform hover:scale-110"
                 title="Download"
               >

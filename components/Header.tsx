@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, LogOut, Book, User as UserIcon, Settings } from 'lucide-react';
+import { LogOut, Book, User as UserIcon, Settings } from 'lucide-react';
 import { User } from '../types';
 
 interface HeaderProps {
@@ -20,15 +20,18 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="border-b border-zinc-800 bg-zinc-950 sticky top-0 z-50 backdrop-blur bg-opacity-80">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3 cursor-pointer group" onClick={onHomeClick}>
-          <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center text-black font-bold shadow-lg shadow-yellow-500/20 group-hover:shadow-yellow-500/40 transition-shadow">
-            <Box className="w-5 h-5" />
-          </div>
+          {/* Logo Image - Replace src with your provided image URL */}
+          <img 
+            src="https://placehold.co/100x100/eab308/000000?text=HS" 
+            alt="Homera Studios Logo" 
+            className="w-8 h-8 rounded-lg object-cover shadow-lg shadow-yellow-500/20 group-hover:shadow-yellow-500/40 transition-shadow"
+          />
           <div>
             <h1 className="text-lg font-bold tracking-tight text-white leading-none group-hover:text-yellow-500 transition-colors">
-              Nano Banana
+              Homera Studios Ai
             </h1>
             <p className="text-[10px] uppercase tracking-widest text-zinc-500 font-semibold mt-0.5">
-              by Homera Studios
+              Visualization Platform
             </p>
           </div>
         </div>
@@ -67,8 +70,12 @@ export const Header: React.FC<HeaderProps> = ({
              </div>
 
              <div className="relative group/menu">
-                <button className="w-9 h-9 bg-zinc-800 hover:bg-zinc-700 rounded-full flex items-center justify-center transition-colors border border-zinc-700">
-                  <UserIcon className="w-5 h-5 text-zinc-400" />
+                <button className="w-9 h-9 bg-zinc-800 hover:bg-zinc-700 rounded-full flex items-center justify-center transition-colors border border-zinc-700 overflow-hidden">
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <UserIcon className="w-5 h-5 text-zinc-400" />
+                  )}
                 </button>
                 
                 {/* Dropdown Menu */}

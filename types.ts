@@ -1,6 +1,6 @@
-export interface NanoBananaRequest {
+export interface HomeraAiRequest {
   interpretation: string;
-  nano_banana_api_payload: {
+  homera_ai_api_payload: {
     image_url: string; // Placeholder string
     task_type: 'RENOVATION' | 'STAGING' | 'DECLUTTER' | 'STYLE_TRANSFER';
     style?: string;

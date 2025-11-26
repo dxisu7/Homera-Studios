@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User } from '../types';
-import { Box, Mail, Lock, User as UserIcon, ArrowRight, CheckCircle, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, ArrowRight, CheckCircle, ShieldCheck } from 'lucide-react';
 
 interface AuthPageProps {
   onLogin: (user: User) => void;
@@ -28,7 +28,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
       // Basic mock validation
       if (email && password) {
         // Recover user from local storage if matches
-        const storedUserStr = localStorage.getItem('nano_banana_user_db');
+        const storedUserStr = localStorage.getItem('homera_ai_user_db');
         const storedUser = storedUserStr ? JSON.parse(storedUserStr) : null;
         
         // Use stored user if email matches, otherwise create a session user
@@ -78,7 +78,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
       };
       
       // Persist "database" user for demo purposes
-      localStorage.setItem('nano_banana_user_db', JSON.stringify(newUser));
+      localStorage.setItem('homera_ai_user_db', JSON.stringify(newUser));
       
       onLogin(newUser);
     }, 1500);
@@ -102,11 +102,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
 
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl flex items-center justify-center text-black shadow-2xl shadow-yellow-500/20 mx-auto mb-6 transform -rotate-6">
-            <Box className="w-8 h-8" />
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Nano Banana</h1>
-          <p className="text-zinc-500">AI-Powered Real Estate Visualization</p>
+          {/* Logo Image - Replace src with your provided image URL */}
+          <img 
+            src="https://placehold.co/200x200/eab308/000000?text=HS" 
+            alt="Homera Studios Logo" 
+            className="w-16 h-16 rounded-2xl mx-auto mb-6 transform -rotate-6 shadow-2xl shadow-yellow-500/20 object-cover"
+          />
+          <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Homera Studios Ai</h1>
+          <p className="text-zinc-500">Intelligent Real Estate Visualization</p>
         </div>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden">
@@ -246,7 +249,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
           <div className="bg-zinc-950/50 border-t border-zinc-800 p-4 text-center">
             {mode === 'LOGIN' && (
               <p className="text-sm text-zinc-400">
-                New to Nano Banana?{' '}
+                New to Homera Studios Ai?{' '}
                 <button onClick={() => setMode('REGISTER')} className="text-yellow-500 font-bold hover:underline">
                   Join now
                 </button>

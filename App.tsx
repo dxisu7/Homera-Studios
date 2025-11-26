@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, Wand2, Terminal, Image as ImageIcon, CheckCircle, RefreshCw, LayoutGrid } from 'lucide-react';
 import { interpretRequest, executeTransformation } from './services/geminiService';
-import { NanoBananaRequest, TransformationLog, User, SavedResult } from './types';
+import { HomeraAiRequest, TransformationLog, User, SavedResult } from './types';
 
 // Components
 import { Header } from './components/Header';
@@ -26,27 +26,27 @@ const App: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [logs, setLogs] = useState<TransformationLog[]>([]);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-  const [currentResultMeta, setCurrentResultMeta] = useState<NanoBananaRequest | null>(null);
+  const [currentResultMeta, setCurrentResultMeta] = useState<HomeraAiRequest | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'upload' | 'results'>('upload');
 
   // Load User and Library from local storage on mount
   useEffect(() => {
-    const storedUser = localStorage.getItem('nano_banana_session');
-    const storedLib = localStorage.getItem('nano_banana_library');
+    const storedUser = localStorage.getItem('homera_ai_session');
+    const storedLib = localStorage.getItem('homera_ai_library');
     if (storedUser) setUser(JSON.parse(storedUser));
     if (storedLib) setSavedResults(JSON.parse(storedLib));
   }, []);
 
   // Persist User changes
   useEffect(() => {
-    if (user) localStorage.setItem('nano_banana_session', JSON.stringify(user));
-    else localStorage.removeItem('nano_banana_session');
+    if (user) localStorage.setItem('homera_ai_session', JSON.stringify(user));
+    else localStorage.removeItem('homera_ai_session');
   }, [user]);
 
   // Persist Library changes
   useEffect(() => {
-    localStorage.setItem('nano_banana_library', JSON.stringify(savedResults));
+    localStorage.setItem('homera_ai_library', JSON.stringify(savedResults));
   }, [savedResults]);
 
 
@@ -104,7 +104,7 @@ const App: React.FC = () => {
         title: 'Request Interpretation', 
         message: analysis.interpretation, 
         status: 'success',
-        data: analysis.nano_banana_api_payload
+        data: analysis.homera_ai_api_payload
       });
 
       setCurrentResultMeta(analysis);
@@ -114,11 +114,11 @@ const App: React.FC = () => {
       // Step 2: Execute Transformation
       addLog({ 
         title: 'Processing Visuals', 
-        message: `Rendering with ${analysis.nano_banana_api_payload.quality.replace('_', ' ')} quality engine...`, 
+        message: `Rendering with ${analysis.homera_ai_api_payload.quality.replace('_', ' ')} quality engine...`, 
         status: 'loading' 
       });
       
-      const resultBase64 = await executeTransformation(file, analysis.nano_banana_api_payload.description);
+      const resultBase64 = await executeTransformation(file, analysis.homera_ai_api_payload.description);
       
       setGeneratedImage(resultBase64);
       
@@ -147,7 +147,7 @@ const App: React.FC = () => {
       generatedImage: generatedImage,
       prompt: prompt,
       date: new Date().toISOString(),
-      quality: currentResultMeta?.nano_banana_api_payload.quality || 'STANDARD',
+      quality: currentResultMeta?.homera_ai_api_payload.quality || 'STANDARD',
       tierUsed: user.tier
     };
 

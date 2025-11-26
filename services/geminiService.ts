@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
-import { NanoBananaRequest } from "../types";
+import { HomeraAiRequest } from "../types";
 
 // Initialize Gemini Client
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -8,7 +8,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
  * Step 1: Interpret the user's request into a structured JSON plan.
  * Uses `gemini-2.5-flash` for fast reasoning and JSON output.
  */
-export const interpretRequest = async (prompt: string, userTier: string = 'FREE'): Promise<NanoBananaRequest> => {
+export const interpretRequest = async (prompt: string, userTier: string = 'FREE'): Promise<HomeraAiRequest> => {
   const modelId = "gemini-2.5-flash";
 
   const schema: Schema = {
@@ -18,7 +18,7 @@ export const interpretRequest = async (prompt: string, userTier: string = 'FREE'
         type: Type.STRING,
         description: "A natural language summary of what will be done, explaining the transformation to the user.",
       },
-      nano_banana_api_payload: {
+      homera_ai_api_payload: {
         type: Type.OBJECT,
         properties: {
           image_url: { type: Type.STRING, description: "Use placeholder '<uploaded_image_blob>'" },
@@ -41,13 +41,13 @@ export const interpretRequest = async (prompt: string, userTier: string = 'FREE'
         required: ["image_url", "task_type", "description", "quality", "consistency_check"]
       }
     },
-    required: ["interpretation", "nano_banana_api_payload"]
+    required: ["interpretation", "homera_ai_api_payload"]
   };
 
   const response = await ai.models.generateContent({
     model: modelId,
     contents: `
-      You are the AI engine behind Nano Banana (Homera Studios). 
+      You are the AI engine behind Homera Studios Ai. 
       Analyze the following real-estate transformation request: "${prompt}".
       
       User Subscription Tier: ${userTier}
@@ -70,12 +70,12 @@ export const interpretRequest = async (prompt: string, userTier: string = 'FREE'
   const text = response.text;
   if (!text) throw new Error("Failed to interpret request.");
   
-  return JSON.parse(text) as NanoBananaRequest;
+  return JSON.parse(text) as HomeraAiRequest;
 };
 
 /**
  * Step 2: Execute the transformation.
- * Uses `gemini-2.5-flash-image` (simulating the Nano Banana rendering engine).
+ * Uses `gemini-2.5-flash-image` (simulating the Homera Studios Ai rendering engine).
  */
 export const executeTransformation = async (imageFile: File, refinedPrompt: string): Promise<string> => {
   const modelId = "gemini-2.5-flash-image"; // The visual expert model
