@@ -20,6 +20,15 @@ export const Library: React.FC<LibraryProps> = ({ items, onDelete }) => {
     );
   }
 
+  const getBadgeStyle = (tier: string) => {
+    switch(tier) {
+      case 'ultra_realistic_16k': return 'bg-yellow-500 text-black border-yellow-400';
+      case 'ultra_4k': return 'bg-purple-500/20 border-purple-500/50 text-purple-200';
+      case 'premium_2k': return 'bg-blue-500/20 border-blue-500/50 text-blue-200';
+      default: return 'bg-zinc-800/80 border-zinc-600 text-zinc-400';
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {items.map((item) => (
@@ -58,12 +67,9 @@ export const Library: React.FC<LibraryProps> = ({ items, onDelete }) => {
             <div className="absolute bottom-2 right-2">
                  <div className={`
                    px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border backdrop-blur
-                   ${item.tierUsed === 'ULTRA_16K' ? 'bg-yellow-500 text-black border-yellow-400' : 
-                     item.tierUsed === 'ULTRA_4K' ? 'bg-purple-500/20 border-purple-500/50 text-purple-200' : 
-                     item.tierUsed === 'PREMIUM_2K' ? 'bg-blue-500/20 border-blue-500/50 text-blue-200' : 
-                     'bg-zinc-800/80 border-zinc-600 text-zinc-400'}
+                   ${getBadgeStyle(item.tierUsed)}
                  `}>
-                  {item.tierUsed?.replace('ULTRA_', '')?.replace('_', ' ') || item.quality}
+                  {item.quality.replace('_', ' ')}
                 </div>
             </div>
           </div>
