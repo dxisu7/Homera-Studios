@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Wand2, Terminal, Image as ImageIcon, CheckCircle, RefreshCw, LayoutGrid } from 'lucide-react';
+import { Upload, Wand2, Terminal, Image as ImageIcon, CheckCircle, RefreshCw, LayoutGrid, Sparkles } from 'lucide-react';
 import { interpretRequest, executeTransformation } from './services/geminiService';
 import { HomeraAiRequest, TransformationLog, User, SavedResult } from './types';
+import { subscriptionPlans } from './config/subscriptions';
 
 // Components
 import { Header } from './components/Header';
@@ -11,12 +12,13 @@ import { ResultViewer } from './components/ResultViewer';
 import { AuthPage } from './components/AuthPage';
 import { AccountSettings } from './components/AccountSettings';
 import { Library } from './components/Library';
+import { AdminDashboard } from './components/AdminDashboard';
 
 const App: React.FC = () => {
   // Application State
   const [user, setUser] = useState<User | null>(null);
   const [savedResults, setSavedResults] = useState<SavedResult[]>([]);
-  const [view, setView] = useState<'editor' | 'library' | 'settings'>('editor');
+  const [view, setView] = useState<'editor' | 'library' | 'settings' | 'admin'>('editor');
 
   // Editor State
   const [file, setFile] = useState<File | null>(null);
@@ -52,17 +54,17 @@ const App: React.FC = () => {
 
   const handleLogin = (loggedInUser: User) => {
     setUser(loggedInUser);
-    setView('editor');
+    setView(loggedInUser.role === 'admin' ? 'admin' : 'editor');
   };
 
   const handleLogout = () => {
     setUser(null);
     setView('editor');
-    // Clear editor state
     setFile(null);
     setImagePreview(null);
     setGeneratedImage(null);
     setLogs([]);
+    localStorage.removeItem('homera_ai_session');
   };
 
   const handleUpdateUser = (updatedUser: User) => {
@@ -82,8 +84,9 @@ const App: React.FC = () => {
     setError(null);
   };
 
-  const processRequest = async () => {
-    if (!file || !prompt || !user) return;
+  const processRequest = async (overridePrompt?: string) => {
+    const promptToUse = overridePrompt || prompt;
+    if (!file || !promptToUse || !user) return;
 
     setError(null);
     setIsAnalyzing(true);
@@ -98,7 +101,7 @@ const App: React.FC = () => {
       // Step 1: Interpret Request
       addLog({ title: 'Analyzing Request', message: `Interpreting user intent (Tier: ${currentUserTier})...`, status: 'loading' });
       
-      const analysis = await interpretRequest(prompt, currentUserTier);
+      const analysis = await interpretRequest(promptToUse, currentUserTier);
       
       addLog({ 
         title: 'Request Interpretation', 
@@ -117,8 +120,19 @@ const App: React.FC = () => {
         message: `Rendering with ${analysis.homera_ai_api_payload.quality.replace('_', ' ')} quality engine...`, 
         status: 'loading' 
       });
+
+      addLog({
+        title: 'Auto-Scaling',
+        message: `Applying automatic upscale to ${analysis.homera_ai_api_payload.target_resolution}`,
+        status: 'loading'
+      });
       
-      const resultBase64 = await executeTransformation(file, analysis.homera_ai_api_payload.description);
+      // Pass the target resolution to the execution function
+      const resultBase64 = await executeTransformation(
+        file, 
+        analysis.homera_ai_api_payload.description,
+        analysis.homera_ai_api_payload.target_resolution
+      );
       
       setGeneratedImage(resultBase64);
       
@@ -134,6 +148,12 @@ const App: React.FC = () => {
     }
   };
 
+  const handleSmartUpscale = () => {
+    if (!file) return;
+    setPrompt("Smart Upscale: Enhance resolution and quality");
+    processRequest("Perform a smart AI upscale on this image. Increase resolution to maximum allowed. Denoise and sharpen.");
+  };
+
   const addLog = (log: TransformationLog) => {
     setLogs(prev => [...prev, log]);
   };
@@ -143,11 +163,13 @@ const App: React.FC = () => {
 
     const newItem: SavedResult = {
       id: Date.now().toString(),
+      userId: user.uid,
       originalImage: imagePreview,
       generatedImage: generatedImage,
       prompt: prompt,
       date: new Date().toISOString(),
       quality: currentResultMeta?.homera_ai_api_payload.quality || 'STANDARD',
+      resolution: currentResultMeta?.homera_ai_api_payload.target_resolution || '1920x1080',
       tierUsed: user.tier
     };
 
@@ -165,7 +187,8 @@ const App: React.FC = () => {
     return <AuthPage onLogin={handleLogin} />;
   }
 
-  // MAIN STATE: Render App Layout
+  const currentPlanName = subscriptionPlans.find(p => p.id === user.tier)?.name || user.tier;
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-200 selection:bg-yellow-500/30 font-sans">
       <Header 
@@ -174,11 +197,13 @@ const App: React.FC = () => {
         onLibraryClick={() => setView('library')}
         onHomeClick={() => setView('editor')}
         onSettingsClick={() => setView('settings')}
-        activeView={view}
+        activeView={view as any}
       />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         
+        {view === 'admin' && <AdminDashboard currentUser={user} />}
+
         {/* VIEW: SETTINGS */}
         {view === 'settings' && (
           <AccountSettings user={user} onUpdateUser={handleUpdateUser} />
@@ -229,27 +254,45 @@ const App: React.FC = () => {
                       className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-sm focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 outline-none resize-none h-32 transition-all placeholder:text-zinc-600"
                     />
                   </div>
-                  <button
-                    onClick={processRequest}
-                    disabled={!file || !prompt || isAnalyzing || isGenerating}
-                    className={`w-full py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all
-                      ${(!file || !prompt) 
-                        ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' 
-                        : 'bg-yellow-500 text-black hover:bg-yellow-400 active:transform active:scale-[0.98] shadow-lg shadow-yellow-500/20'
-                      }
-                      ${(isAnalyzing || isGenerating) ? 'opacity-75 cursor-wait' : ''}
-                    `}
-                  >
-                    {isAnalyzing || isGenerating ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Wand2 className="w-4 h-4" />
-                    )}
-                    {isAnalyzing ? 'Analyzing...' : isGenerating ? 'Rendering...' : 'Generate Transformation'}
-                  </button>
+                  
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => processRequest()}
+                      disabled={!file || !prompt || isAnalyzing || isGenerating}
+                      className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all
+                        ${(!file || !prompt) 
+                          ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' 
+                          : 'bg-yellow-500 text-black hover:bg-yellow-400 active:transform active:scale-[0.98] shadow-lg shadow-yellow-500/20'
+                        }
+                        ${(isAnalyzing || isGenerating) ? 'opacity-75 cursor-wait' : ''}
+                      `}
+                    >
+                      {isAnalyzing || isGenerating ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Wand2 className="w-4 h-4" />
+                      )}
+                      Generate
+                    </button>
+
+                    <button
+                      onClick={handleSmartUpscale}
+                      disabled={!file || isAnalyzing || isGenerating}
+                      className={`py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all border
+                        ${(!file) 
+                          ? 'bg-zinc-900 border-zinc-800 text-zinc-600 cursor-not-allowed' 
+                          : 'bg-zinc-900 border-purple-500/30 text-purple-300 hover:bg-purple-500/10 hover:border-purple-500'
+                        }
+                      `}
+                      title="Use AI Super-Resolution without changing the design"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      Smart Upscale
+                    </button>
+                  </div>
                   
                   <div className="text-[10px] text-center text-zinc-500 mt-2">
-                    Active Plan: <span className="text-yellow-500 font-medium">{user.tier.replace('_', ' ')}</span>
+                    Active Plan: <span className="text-yellow-500 font-medium">{currentPlanName}</span>
                   </div>
                 </div>
               </div>
@@ -313,7 +356,7 @@ const App: React.FC = () => {
                             <div className="w-16 h-16 border-4 border-yellow-500/30 border-t-yellow-500 rounded-full animate-spin mx-auto mb-6"></div>
                             <p className="text-zinc-300 font-medium">Generating Visualization...</p>
                             <p className="text-zinc-500 text-sm mt-2">
-                              {user.tier === 'ULTRA_4K' ? 'Rendering 4K Details...' : 'Applying transformations...'}
+                              {user.tier === 'ultra_realistic_16k' ? 'Rendering 16K Ultra-Realistic...' : user.tier === 'ultra_4k' ? 'Rendering 4K Details...' : 'Applying transformations...'}
                             </p>
                         </div>
                       ) : generatedImage ? (

@@ -1,6 +1,7 @@
 import React from 'react';
 import { LogOut, Book, User as UserIcon, Settings } from 'lucide-react';
 import { User } from '../types';
+import { subscriptionPlans } from '../config/subscriptions';
 
 interface HeaderProps {
   user: User | null;
@@ -15,6 +16,17 @@ export const Header: React.FC<HeaderProps> = ({
   user, onLogoutClick, onLibraryClick, onHomeClick, onSettingsClick, activeView 
 }) => {
   if (!user) return null; // Header is only for authenticated users now
+
+  const getTierColor = (tier: string) => {
+    switch(tier) {
+      case 'ultra_realistic_16k': return 'text-yellow-500';
+      case 'ultra_4k': return 'text-purple-400';
+      case 'premium_2k': return 'text-blue-400';
+      default: return 'text-zinc-500';
+    }
+  };
+
+  const currentPlanName = subscriptionPlans.find(p => p.id === user.tier)?.name || user.tier;
 
   return (
     <header className="border-b border-zinc-800 bg-zinc-950 sticky top-0 z-50 backdrop-blur bg-opacity-80">
@@ -59,20 +71,16 @@ export const Header: React.FC<HeaderProps> = ({
            {/* User Profile */}
            <div className="flex items-center gap-3">
              <div className="text-right hidden sm:block">
-               <div className="text-xs font-bold text-white">{user.name}</div>
-               <div className={`text-[10px] font-mono font-bold ${
-                 user.tier === 'ULTRA_4K' ? 'text-purple-400' :
-                 user.tier === 'PREMIUM_2K' ? 'text-blue-400' :
-                 'text-zinc-500'
-               }`}>
-                 {user.tier.replace('_', ' ')}
+               <div className="text-xs font-bold text-white">{user.displayName}</div>
+               <div className={`text-[10px] font-mono font-bold ${getTierColor(user.tier)}`}>
+                 {currentPlanName}
                </div>
              </div>
 
              <div className="relative group/menu">
                 <button className="w-9 h-9 bg-zinc-800 hover:bg-zinc-700 rounded-full flex items-center justify-center transition-colors border border-zinc-700 overflow-hidden">
-                  {user.avatarUrl ? (
-                    <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+                  {user.photoURL ? (
+                    <img src={user.photoURL} alt={user.displayName} className="w-full h-full object-cover" />
                   ) : (
                     <UserIcon className="w-5 h-5 text-zinc-400" />
                   )}

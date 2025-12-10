@@ -74,8 +74,23 @@ export const interpretRequest = async (prompt: string, userTierId: string = 'sta
   return JSON.parse(text) as HomeraAiRequest;
 };
 
-export const executeTransformation = async (imageFile: File, refinedPrompt: string): Promise<string> => {
-  const modelId = "gemini-2.5-flash-image";
+export const executeTransformation = async (imageFile: File, refinedPrompt: string, targetResolution: string): Promise<string> => {
+  // Select Model & Config based on Resolution
+  let modelId = "gemini-2.5-flash-image"; // Default for standard/speed
+  let imageSizeConfig: string | undefined;
+
+  // Check for 2K, 4K, or 16K requirements
+  // Note: 16K will use the max available 4K setting as per API capabilities
+  if (targetResolution.includes('3840') || targetResolution.includes('2160') || targetResolution.includes('15369')) {
+     modelId = "gemini-3-pro-image-preview";
+     imageSizeConfig = "4K";
+  } else if (targetResolution.includes('2560') || targetResolution.includes('1440')) {
+     modelId = "gemini-3-pro-image-preview";
+     imageSizeConfig = "2K";
+  }
+  // Standard (1080p) falls back to gemini-2.5-flash-image or default params
+
+  console.log(`[Execute] Using Model: ${modelId}, Size: ${imageSizeConfig || 'Default'}`);
 
   const base64Data = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -95,6 +110,12 @@ export const executeTransformation = async (imageFile: File, refinedPrompt: stri
     ? " Mode: Super-Resolution. Rebuild textures and increase pixel density. Do not hallucinate new objects. Strictly maintain the original image composition and style, just higher quality."
     : " Maintain the structural integrity of the room (walls, windows, ceiling) unless explicitly told to renovate them. Ensure photorealistic lighting and textures suitable for high-end real estate.";
 
+  // Prepare Config
+  const generateConfig: any = {};
+  if (imageSizeConfig) {
+    generateConfig.imageConfig = { imageSize: imageSizeConfig };
+  }
+
   const response = await ai.models.generateContent({
     model: modelId,
     contents: {
@@ -102,7 +123,8 @@ export const executeTransformation = async (imageFile: File, refinedPrompt: stri
         { text: refinedPrompt + additionalContext },
         { inlineData: { mimeType: imageFile.type, data: base64Data } }
       ]
-    }
+    },
+    config: generateConfig
   });
 
   const parts = response.candidates?.[0]?.content?.parts;

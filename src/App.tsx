@@ -139,7 +139,12 @@ const App: React.FC = () => {
         status: 'loading'
       });
       
-      const resultBase64 = await executeTransformation(file, analysis.homera_ai_api_payload.description);
+      // Pass the target resolution to the execution function
+      const resultBase64 = await executeTransformation(
+        file, 
+        analysis.homera_ai_api_payload.description,
+        analysis.homera_ai_api_payload.target_resolution
+      );
       
       setGeneratedImage(resultBase64);
       
