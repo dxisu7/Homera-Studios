@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { User } from '../types';
 import { Mail, Lock, User as UserIcon, ArrowRight, AlertCircle, ShieldCheck } from 'lucide-react';
-import { auth } from '../firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, sendEmailVerification, updateProfile } from 'firebase/auth';
 
 interface AuthPageProps {
   onLogin: (user: User) => void;
@@ -17,47 +15,57 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const mapFirebaseUser = (fbUser: any, displayName?: string): User => ({
-    uid: fbUser.uid,
-    email: fbUser.email,
-    displayName: displayName || fbUser.displayName || 'User',
-    country: 'Netherlands',
-    tier: 'standard',
-    role: 'user',
-    subscriptionStatus: 'ACTIVE',
-    nextBillingDate: new Date().toISOString(),
-    createdAt: new Date().toISOString()
-  });
-
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setMessage(null);
 
-    try {
-      if (mode === 'LOGIN') {
-        const cred = await signInWithEmailAndPassword(auth, email, password);
-        // In real app, fetch user doc from Firestore here
-        onLogin(mapFirebaseUser(cred.user));
-      } else if (mode === 'REGISTER') {
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(cred.user, { displayName: name });
-        await sendEmailVerification(cred.user);
-        
-        // In real app, create user doc in Firestore here
-        
-        onLogin(mapFirebaseUser(cred.user, name));
-      } else if (mode === 'FORGOT') {
-        await sendPasswordResetEmail(auth, email);
-        setMessage("Password reset link sent to email.");
-        setMode('LOGIN');
-      }
-    } catch (err: any) {
-      setError(err.message.replace('Firebase: ', ''));
-    } finally {
-      setLoading(false);
-    }
+    // Mock Authentication Logic
+    setTimeout(() => {
+        setLoading(false);
+        if (mode === 'LOGIN') {
+            // Mock Login
+            if (email && password) {
+                 const mockUser: User = {
+                    uid: 'mock-user-' + Date.now(),
+                    email: email,
+                    displayName: 'Demo User',
+                    country: 'Netherlands',
+                    tier: 'standard',
+                    role: 'user',
+                    subscriptionStatus: 'ACTIVE',
+                    nextBillingDate: new Date().toISOString(),
+                    createdAt: new Date().toISOString()
+                };
+                onLogin(mockUser);
+            } else {
+                setError("Please enter valid credentials.");
+            }
+        } else if (mode === 'REGISTER') {
+             // Mock Register
+             if (email && password && name) {
+                 const mockUser: User = {
+                    uid: 'mock-user-' + Date.now(),
+                    email: email,
+                    displayName: name,
+                    country: 'Netherlands',
+                    tier: 'standard',
+                    role: 'user',
+                    subscriptionStatus: 'ACTIVE',
+                    nextBillingDate: new Date().toISOString(),
+                    createdAt: new Date().toISOString()
+                };
+                onLogin(mockUser);
+             } else {
+                 setError("Please fill in all fields.");
+             }
+        } else {
+            // Forgot Password
+            setMessage("Password reset link sent (Mock).");
+            setMode('LOGIN');
+        }
+    }, 1000);
   };
 
   return (

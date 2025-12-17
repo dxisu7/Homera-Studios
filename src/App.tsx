@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Upload, Wand2, Terminal, Image as ImageIcon, CheckCircle, RefreshCw, LayoutGrid, Sparkles } from 'lucide-react';
 import { interpretRequest, executeTransformation } from './services/geminiService';
@@ -14,7 +13,6 @@ import { AuthPage } from './components/AuthPage';
 import { AccountSettings } from './components/AccountSettings';
 import { Library } from './components/Library';
 import { AdminDashboard } from './components/AdminDashboard';
-import { auth } from './firebase'; // Import firebase auth listener
 
 const App: React.FC = () => {
   // Application State
@@ -34,22 +32,12 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'upload' | 'results'>('upload');
 
-  // Load User and Library from local storage on mount (Migration from local to Firebase would go here)
+  // Load User and Library from local storage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem('homera_ai_session');
     const storedLib = localStorage.getItem('homera_ai_library');
     if (storedUser) setUser(JSON.parse(storedUser));
     if (storedLib) setSavedResults(JSON.parse(storedLib));
-
-    // Listen to Firebase Auth state
-    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
-        if (firebaseUser) {
-            // In a real app, fetch additional user details (tier, role) from Firestore here
-            // For now, we merge basic auth info with our stored local state or default
-            setUser(prev => prev ? { ...prev, uid: firebaseUser.uid, email: firebaseUser.email! } : null);
-        }
-    });
-    return () => unsubscribe();
   }, []);
 
   // Persist User changes
@@ -70,13 +58,13 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
-    auth.signOut();
     setUser(null);
     setView('editor');
     setFile(null);
     setImagePreview(null);
     setGeneratedImage(null);
     setLogs([]);
+    localStorage.removeItem('homera_ai_session');
   };
 
   const handleUpdateUser = (updatedUser: User) => {
