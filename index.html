@@ -18,6 +18,58 @@
           -ms-overflow-style: none;
           scrollbar-width: none;
       }
+
+      /* Account Menu Styles */
+      .account-trigger {
+        /* background: none;  -- Handled by Tailwind now for avatar circle */
+        /* border: none;      -- Handled by Tailwind */
+        cursor: pointer;
+        color: white;
+      }
+
+      .account-menu {
+        background: #09090b; /* zinc-950 */
+        border-radius: 12px;
+        padding: 6px;
+        min-width: 190px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        border: 1px solid #27272a; /* zinc-800 */
+      }
+
+      .menu-item {
+        all: unset;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 8px;
+        color: white;
+        cursor: pointer;
+        font-size: 0.875rem; /* text-sm */
+        transition: background-color 0.2s;
+      }
+
+      .menu-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      
+      .menu-item:focus {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .menu-item.danger {
+        color: #f87171; /* red-400 */
+      }
+      
+      .menu-item.danger:hover {
+        background: rgba(248, 113, 113, 0.1);
+      }
+
+      .menu-separator {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.08);
+        margin: 6px 0;
+      }
     </style>
   <script type="importmap">
 {
@@ -30,7 +82,9 @@
     "vite": "https://aistudiocdn.com/vite@^7.2.4",
     "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
     "jspdf": "https://aistudiocdn.com/jspdf@^3.0.4",
-    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/"
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
+    "@radix-ui/react-dropdown-menu": "https://esm.sh/@radix-ui/react-dropdown-menu@^2.1.16",
+    "framer-motion": "https://esm.sh/framer-motion@^12.23.26"
   }
 }
 </script>

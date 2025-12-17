@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { LogOut, Book, User as UserIcon, Settings } from 'lucide-react';
+import React from 'react';
+import { Book } from 'lucide-react';
 import { User } from '../types';
 import { subscriptionPlans } from '../config/subscriptions';
+import AccountMenu from './AccountMenu';
 
 interface HeaderProps {
   user: User | null;
@@ -15,37 +16,6 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ 
   user, onLogoutClick, onLibraryClick, onHomeClick, onSettingsClick, activeView 
 }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Clean up timeout on unmount to prevent memory leaks
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
-  const handleMouseEnter = () => {
-    // If the mouse re-enters (either avatar or menu) before the close delay finishes,
-    // we clear the close timer so the menu stays open.
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    setIsMenuOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    // Add a small delay (200ms) before closing. This acts as a bridge,
-    // allowing the user to cross the gap between the avatar and the menu
-    // without the menu disappearing immediately.
-    timeoutRef.current = setTimeout(() => {
-      setIsMenuOpen(false);
-    }, 200);
-  };
-
   if (!user) return null; // Header is only for authenticated users now
 
   const getTierColor = (tier: string) => {
@@ -108,47 +78,12 @@ export const Header: React.FC<HeaderProps> = ({
                </div>
              </div>
 
-             {/* Wrapper div handles hover state for both the Avatar button and the Dropdown menu */}
-             <div 
-               className="relative"
-               onMouseEnter={handleMouseEnter}
-               onMouseLeave={handleMouseLeave}
-             >
-                <button className="w-9 h-9 bg-zinc-800 hover:bg-zinc-700 rounded-full flex items-center justify-center transition-colors border border-zinc-700 overflow-hidden">
-                  {user.photoURL ? (
-                    <img src={user.photoURL} alt={user.displayName} className="w-full h-full object-cover" />
-                  ) : (
-                    <UserIcon className="w-5 h-5 text-zinc-400" />
-                  )}
-                </button>
-                
-                {/* Dropdown Menu */}
-                {isMenuOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
-                    <div className="p-2 space-y-1">
-                      <button 
-                        onClick={() => {
-                          onSettingsClick();
-                          setIsMenuOpen(false);
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-900 hover:text-white rounded-lg flex items-center gap-2 transition-colors"
-                      >
-                        <Settings className="w-4 h-4" /> Account Settings
-                      </button>
-                      <div className="h-px bg-zinc-800 my-1"></div>
-                      <button 
-                        onClick={() => {
-                          onLogoutClick();
-                          setIsMenuOpen(false);
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg flex items-center gap-2 transition-colors"
-                      >
-                        <LogOut className="w-4 h-4" /> Log Out
-                      </button>
-                    </div>
-                  </div>
-                )}
-             </div>
+             {/* Account Menu (Click-based) */}
+             <AccountMenu 
+               user={user} 
+               onLogout={onLogoutClick} 
+               onSettings={onSettingsClick} 
+             />
            </div>
         </div>
       </div>
